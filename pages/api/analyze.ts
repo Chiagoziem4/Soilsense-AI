@@ -140,7 +140,7 @@ Keep the response short and structured. Format it clearly with labels.`,
       },
       {
         headers: {
-          Authorization: \`Bearer \${apiKey}\`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
       }

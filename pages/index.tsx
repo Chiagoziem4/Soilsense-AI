@@ -75,7 +75,7 @@ export default function Home() {
                 Upload soil. Get instant crop intelligence.
               </p>
               <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Powered by advanced AI vision analysis, discover your soil's potential and get personalized crop recommendations in seconds.
+                Powered by advanced AI vision analysis, discover your soil&apos;s potential and get personalized crop recommendations in seconds.
               </p>
             </div>
 

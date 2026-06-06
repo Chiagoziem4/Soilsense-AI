@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 interface UploadCardProps {
   onAnalyze: (imageData: string, fileName: string) => Promise<void>;
@@ -67,8 +68,8 @@ export const UploadCard: React.FC<UploadCardProps> = ({ onAnalyze, isLoading }) 
       >
         {preview ? (
           <div className="space-y-4 animate-fade-in">
-            <div className="relative rounded-xl overflow-hidden">
-              <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
+            <div className="relative rounded-xl overflow-hidden w-full">
+              <Image src={preview} alt="Preview" width={500} height={256} className="w-full h-64 object-cover" />
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
