@@ -280,7 +280,7 @@ export default function AnalysisResults() {
 
             {/* Irrigation Guidance */}
             {result.irrigationGuidance && (
-              <div className="card mb-6 animate-slide-up" style={{ animationDelay: '0.35s' }} style={{ animationDelay: '0.35s' }}>
+              <div className="card mb-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
                 <h2 className="text-lg font-bold text-earth-700 dark:text-earth-300 mb-4">💧 Irrigation Guidance</h2>
                 <p className="text-gray-700 dark:text-gray-300">{result.irrigationGuidance}</p>
               </div>
