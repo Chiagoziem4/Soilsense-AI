@@ -1,27 +1,38 @@
 # SoilSense AI
 
-A modern, production-ready full-stack web application for AI-powered soil analysis and crop recommendations.
+A comprehensive agricultural technology platform with AI-powered analysis for soil, plants, and crop recommendations. Build with modern web technologies and deployed on Vercel.
 
-## Features
+## 🌟 Features
 
-✨ **Core Features:**
-- 🖼️ **Image Upload** - Upload soil images (JPG/PNG) with preview
-- 🤖 **AI Analysis** - Uses Grok Vision API for soil analysis
-- 🌾 **Crop Recommendations** - Get personalized crop suggestions
-- 🎨 **Beautiful UI** - Premium SaaS design with smooth animations
-- 🌙 **Dark Mode** - Toggle between light and dark themes
-- 📱 **Responsive** - Mobile-first design
-- 📄 **PDF Export** - Download analysis results as PDF
+### Core Services
+- **🪨 Soil Analysis** - Analyze soil type, texture, fertility, moisture, and get crop recommendations
+- **🌿 Plant Health Analysis** - Detect plant diseases, nutrient deficiencies, and receive treatment recommendations
+- **🌾 AI Crop Recommendation** - Enter soil and environmental data to get personalized crop recommendations with confidence scores
+
+### UI/UX Features
+- ✨ **Modern AgriTech Design** - Premium, professional interface with earth tones
+- 🌙 **Dark Mode** - Full dark mode support with localStorage persistence
+- 📱 **Fully Responsive** - Mobile-first design for all devices
+- 🎨 **Smooth Animations** - Glassmorphism effects and transitions
+- 📄 **PDF Export** - Download detailed analysis reports
+- 🎯 **Results Dashboard** - Comprehensive analysis with health scores, risk levels, and recommendations
+
+### Platform Features
+- 🤖 **AI-Powered Analysis** - Grok Vision API for advanced image and data analysis
+- 🔐 **Secure** - API keys kept server-side
 - ⚡ **Fast & Lightweight** - Optimized performance
+- 📊 **Data-Driven** - Actionable insights and recommendations
+- 🌍 **Sustainable** - Focus on sustainable agriculture practices
 
 ## Tech Stack
 
-- **Frontend:** Next.js 14 (React)
-- **Styling:** Tailwind CSS
+- **Frontend:** Next.js 14 (React 18)
+- **Styling:** Tailwind CSS with custom theme
 - **Backend:** Next.js API Routes
 - **AI:** Grok Vision API
-- **TypeScript:** Full type safety
-- **Deployment:** Vercel-ready
+- **Language:** TypeScript
+- **Database:** Optional (future enhancement)
+- **Deployment:** Vercel
 
 ## Quick Start
 
@@ -63,46 +74,66 @@ A modern, production-ready full-stack web application for AI-powered soil analys
 ```
 soilsense-ai/
 ├── pages/
-│   ├── _app.tsx           # App wrapper & global config
-│   ├── _document.tsx      # HTML document wrapper
-│   ├── index.tsx          # Landing page with upload
-│   ├── results.tsx        # Results display page
+│   ├── _app.tsx                  # App wrapper
+│   ├── _document.tsx             # HTML document
+│   ├── index.tsx                 # Home page with intro
+│   ├── services.tsx              # Service selection hub
+│   ├── soil-analysis.tsx         # Soil analysis page
+│   ├── plant-analysis.tsx        # Plant analysis page
+│   ├── crop-recommendation.tsx   # Crop recommendation form
+│   ├── analysis-results.tsx      # Unified results dashboard
+│   ├── results.tsx               # Legacy (for backward compatibility)
 │   └── api/
-│       └── analyze.ts     # Grok API integration endpoint
+│       ├── analyze.ts            # Soil analysis endpoint
+│       ├── analyze-plant.ts      # Plant analysis endpoint
+│       └── recommend-crops.ts    # Crop recommendation endpoint
 ├── components/
-│   ├── DarkModeToggle.tsx # Dark mode toggle button
-│   ├── UploadCard.tsx     # Image upload component
-│   └── ResultsCard.tsx    # Results display component
+│   ├── AgricultureIntro.tsx      # Agriculture introduction section
+│   ├── DarkModeToggle.tsx        # Dark mode toggle
+│   ├── DeveloperInfo.tsx         # Developer/creator info
+│   ├── ServiceCard.tsx           # Service selection card
+│   ├── UploadCard.tsx            # Image upload component
+│   └── ResultsCard.tsx           # Results display card
 ├── styles/
-│   └── globals.css        # Global styles & Tailwind setup
-├── public/                # Static assets
-├── package.json           # Dependencies
-├── tailwind.config.js     # Tailwind configuration
-├── next.config.js         # Next.js configuration
-├── tsconfig.json          # TypeScript configuration
-└── .env.example           # Environment variables template
+│   └── globals.css               # Global styles
+├── types/
+│   └── html2pdf.d.ts             # TypeScript declarations
+├── public/                       # Static assets
+├── package.json                  # Dependencies
+├── tailwind.config.js            # Tailwind theme config
+├── next.config.js                # Next.js config
+├── tsconfig.json                 # TypeScript config
+├── .env.example                  # Environment template
+└── README.md                     # Documentation
 ```
 
-## How It Works
+## User Flow
 
-1. **Upload Phase:**
-   - User uploads a soil image via drag-drop or file picker
-   - Image is previewed before analysis
-   - Click "Analyze Soil" to start
+```
+Home Page
+  ↓
+Agriculture Introduction (learn about AgriTech)
+  ↓
+Choose a Service (Soil / Plant / Crop)
+  ↓
+  ├─→ Soil Analysis
+  │   └─→ Upload image → AI Analysis → Results Dashboard
+  │
+  ├─→ Plant Health Analysis
+  │   └─→ Upload image → Disease Detection → Results Dashboard
+  │
+  └─→ Crop Recommendation
+      └─→ Enter soil/environmental data → AI Recommendation → Results Dashboard
+  ↓
+Results Dashboard (view scores, recommendations, insights)
+  ↓
+Download Report or New Analysis
+```
 
-2. **Analysis Phase:**
-   - Image is sent to backend API route
-   - Backend converts to base64 and sends to Grok Vision API
-   - Grok analyzes the image and returns soil information
-
-3. **Results Phase:**
-   - Analysis results are displayed in a beautiful card
-   - Shows soil type, fertility, moisture level, and crop recommendations
-   - User can download results as PDF or analyze another image
-
-## API Endpoint
+## API Endpoints
 
 ### POST `/api/analyze`
+Soil analysis using image upload.
 
 **Request:**
 ```json
@@ -119,7 +150,63 @@ soilsense-ai/
   "fertilityLevel": "high",
   "moistureLevel": "moderate",
   "recommendedCrops": ["Wheat", "Corn", "Soybeans"],
-  "explanation": "This soil sample..."
+  "explanation": "Detailed analysis..."
+}
+```
+
+### POST `/api/analyze-plant`
+Plant health analysis using image upload.
+
+**Request:**
+```json
+{
+  "image": "data:image/jpeg;base64,...",
+  "fileName": "plant_sample.jpg"
+}
+```
+
+**Response:**
+```json
+{
+  "plantHealth": "Moderate",
+  "healthScore": 65,
+  "riskLevel": "medium",
+  "plantDiseases": ["Early blight"],
+  "nutrientDeficiencies": ["Nitrogen"],
+  "treatmentRecommendations": ["Apply nitrogen fertilizer", "Increase watering"],
+  "confidenceScore": 0.85
+}
+```
+
+### POST `/api/recommend-crops`
+Get crop recommendations based on environmental data.
+
+**Request:**
+```json
+{
+  "N": 50,
+  "P": 30,
+  "K": 45,
+  "pH": 6.8,
+  "temperature": 25,
+  "humidity": 65,
+  "rainfall": 200,
+  "soilMoisture": 40
+}
+```
+
+**Response:**
+```json
+{
+  "crops": [
+    {
+      "name": "Wheat",
+      "confidence": 0.85,
+      "reason": "Excellent for NPK levels and pH conditions"
+    }
+  ],
+  "farmingPractices": ["Crop rotation", "Balanced fertilization"],
+  "confidenceScore": 0.87
 }
 ```
 
@@ -144,19 +231,19 @@ GROK_API_KEY=your_grok_api_key_here
 ```bash
 # Or use Vercel CLI
 npm install -g vercel
-vercel
+vercel --prod
 ```
 
 ### Deploy to Other Platforms
 
-The app can be deployed to any Node.js hosting:
+Works with any Node.js hosting:
 - Railway
 - Render
-- DigitalOcean App Platform
+- DigitalOcean
 - AWS Amplify
 - Netlify (with serverless functions)
 
-Build command: `npm run build`
+Build command: `npm run build`  
 Start command: `npm run start`
 
 ## Available Scripts
@@ -168,46 +255,42 @@ npm run start    # Start production server
 npm run lint     # Run ESLint
 ```
 
-## UI Components
+## Color Palette
 
-### DarkModeToggle
-Toggle between light and dark themes. Persists preference in localStorage.
+### Earth Tones Theme
+- **Soil Colors**: Browns and tans for soil-related content
+- **Earth Colors**: Greens for agriculture and growth
+- **Accent Colors**: White, grays, and earth browns
 
-### UploadCard
-Drag-and-drop image upload with preview. Supports JPG and PNG.
-
-### ResultsCard
-Displays analysis results with badges and crop recommendation chips.
-
-## Color Scheme
-
-The app uses earth-tone colors:
-- **Soil Palette:** Browns and tans (#6d5a47, #8b7355)
-- **Earth Palette:** Greens (#427d1e, #5a9c2a)
-- **Accents:** Whites and grays with soft shadows
-
-Dark mode automatically inverts the color scheme for comfortable viewing.
+### Dark Mode
+Automatically inverts colors for comfortable viewing in low-light environments.
 
 ## Customization
 
 ### Change Colors
 Edit `tailwind.config.js` to modify the `soil` and `earth` color palettes.
 
-### Change API Endpoint
-Modify `/pages/api/analyze.ts` to use a different vision API (e.g., OpenAI, Claude).
+### Change API Provider
+Modify the API endpoints to use different vision AI providers:
+- OpenAI Vision
+- Claude Vision
+- Anthropic
+- Custom ML models
 
 ### Add Features
-- Authentication: Add NextAuth.js
-- Database: Connect to Supabase or Firebase
-- History: Store past analyses
-- Sharing: Generate shareable result links
+- User authentication with NextAuth.js
+- Database integration (Supabase, Firebase)
+- Analysis history and saved reports
+- Community features and sharing
+- Multi-language support
 
 ## Performance
 
-- **First Load:** ~2-3 seconds (optimized)
+- **First Load:** ~2-3 seconds
 - **Image Upload:** Instant preview
 - **AI Analysis:** ~3-5 seconds (depends on Grok API)
 - **Results Display:** Instant
+- **PDF Generation:** ~2-3 seconds
 
 ## Browser Support
 
@@ -224,36 +307,67 @@ Modify `/pages/api/analyze.ts` to use a different vision API (e.g., OpenAI, Clau
 
 **"Failed to analyze image" error:**
 - Check if Grok API key is valid
-- Verify image is JPG or PNG
+- Verify image is JPG, PNG, or WebP
 - Try a different image
 
-**Dark mode not working:**
-- Clear localStorage: `localStorage.clear()`
-- Refresh the page
+**Build errors:**
+- Clear `.next` folder: `rm -rf .next`
+- Reinstall dependencies: `npm install`
+- Check TypeScript errors: `npm run build`
 
-**PDF download not working:**
-- Check browser console for errors
-- Ensure pop-ups are not blocked
-- Try a different browser
+**Dark mode not working:**
+- Clear localStorage: Open DevTools → Application → Storage → Clear All
+- Refresh the page
 
 ## Security
 
-- API keys are kept server-side
-- Images are only sent to Grok API
+- API keys are kept server-side only
+- Images are sent only to Grok API
 - No data is stored or logged
 - HTTPS recommended for production
+- Input validation on all endpoints
+
+## Contributing
+
+Contributions are welcome! Areas for enhancement:
+- Additional ML models
+- User authentication
+- Database integration
+- Advanced analytics
+- Mobile app
+- API documentation
+- More detailed recommendations
+
+## Roadmap
+
+- [ ] User accounts and saved analyses
+- [ ] Advanced analytics dashboard
+- [ ] Real-time weather integration
+- [ ] Mobile app (React Native)
+- [ ] Multi-language support
+- [ ] Video analysis support
+- [ ] Community recommendations
+- [ ] AI training on local data
 
 ## License
 
 MIT - Feel free to use for personal or commercial projects
 
+## Credits
+
+**Developer:** Sammy  
+**AI Provider:** Grok Vision API (X.AI)  
+**Built with:** Next.js, React, Tailwind CSS, TypeScript
+
 ## Support
 
-For issues or questions, check:
-- [Next.js Docs](https://nextjs.org/docs)
-- [Tailwind Docs](https://tailwindcss.com/docs)
-- [Grok API Docs](https://console.x.ai/)
+For issues, questions, or suggestions:
+- Check documentation above
+- Review [Next.js Docs](https://nextjs.org/docs)
+- Review [Tailwind Docs](https://tailwindcss.com/docs)
+- Check [Grok API Docs](https://console.x.ai/)
 
 ---
 
-**Made with 🌱 by the SoilSense Team**
+**Transform Your Agriculture with AI** 🌱  
+*SoilSense AI - Smart Farming for a Sustainable Future*
