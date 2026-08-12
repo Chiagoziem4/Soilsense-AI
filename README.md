@@ -1,6 +1,6 @@
 # SoilSense AI
 
-A comprehensive agricultural technology platform with AI-powered analysis for soil, plants, and crop recommendations. Build with modern web technologies and deployed on Vercel.
+A comprehensive agricultural technology platform with AI-powered analysis for soil, plants, and crop recommendations. Build with modern web technologies.
 
 ## 🌟 Features
 
@@ -32,7 +32,6 @@ A comprehensive agricultural technology platform with AI-powered analysis for so
 - **AI:** Grok Vision API
 - **Language:** TypeScript
 - **Database:** Optional (future enhancement)
-- **Deployment:** Vercel
 
 ## Quick Start
 
@@ -358,14 +357,6 @@ MIT - Feel free to use for personal or commercial projects
 **Developer:** Sammy  
 **AI Provider:** Grok Vision API (X.AI)  
 **Built with:** Next.js, React, Tailwind CSS, TypeScript
-
-## Support
-
-For issues, questions, or suggestions:
-- Check documentation above
-- Review [Next.js Docs](https://nextjs.org/docs)
-- Review [Tailwind Docs](https://tailwindcss.com/docs)
-- Check [Grok API Docs](https://console.x.ai/)
 
 ---
 
