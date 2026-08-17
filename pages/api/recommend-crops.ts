@@ -21,34 +21,43 @@ interface ErrorResponse {
 }
 
 const parseGrokCropResponse = (text: string): CropRecommendation => {
-  const crops = [
-    { name: 'Wheat', confidence: 0.85, reason: 'Excellent for NPK levels and pH conditions' },
-    { name: 'Rice', confidence: 0.78, reason: 'Good moisture levels support rice cultivation' },
-    { name: 'Corn', confidence: 0.82, reason: 'Well-suited to current environmental conditions' },
-  ];
+  const candidate = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1] ?? text;
+  let parsed: Partial<CropRecommendation>;
+  try {
+    parsed = JSON.parse(candidate);
+  } catch {
+    throw new Error('The recommendation provider returned an invalid structured response.');
+  }
 
-  const keyFindings = [
-    'Soil conditions are favorable for multiple crops',
-    'Environmental parameters support good growth',
-    'Moisture levels are adequate for cultivation',
-  ];
+  const crops = Array.isArray(parsed.crops)
+    ? parsed.crops
+        .filter((crop): crop is { name: string; confidence: number; reason: string } =>
+          Boolean(crop && typeof crop.name === 'string' && typeof crop.reason === 'string' && Number.isFinite(Number(crop.confidence)))
+        )
+        .map(crop => ({
+          name: crop.name.trim(),
+          confidence: Math.max(0, Math.min(1, Number(crop.confidence))),
+          reason: crop.reason.trim(),
+        }))
+        .filter(crop => crop.name.length > 0 && crop.reason.length > 0)
+    : [];
 
-  const farmingPractices = [
-    'Practice crop rotation to maintain soil health',
-    'Use balanced fertilization based on soil NPK levels',
-    'Implement drip irrigation for water efficiency',
-    'Monitor soil pH regularly',
-    'Use organic mulching to retain moisture',
-  ];
+  if (crops.length === 0) {
+    throw new Error('The recommendation provider returned no usable crop recommendations.');
+  }
+
+  const asStrings = (value: unknown) => Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string').map(item => item.trim()).filter(Boolean)
+    : [];
 
   return {
     crops,
-    recommendedCrops: crops.map(c => c.name),
-    keyFindings,
-    farmingPractices,
-    irrigationGuidance: 'Maintain consistent soil moisture. Adjust frequency based on rainfall.',
-    confidenceScore: 0.87,
-    explanation: text.substring(0, 400) || 'AI analysis of your environmental data suggests these crops would perform well.',
+    recommendedCrops: asStrings(parsed.recommendedCrops).length ? asStrings(parsed.recommendedCrops) : crops.map(c => c.name),
+    keyFindings: asStrings(parsed.keyFindings),
+    farmingPractices: asStrings(parsed.farmingPractices),
+    irrigationGuidance: typeof parsed.irrigationGuidance === 'string' ? parsed.irrigationGuidance.trim() : '',
+    confidenceScore: Math.max(0, Math.min(1, Number(parsed.confidenceScore ?? 0))),
+    explanation: typeof parsed.explanation === 'string' ? parsed.explanation.trim().substring(0, 400) : text.substring(0, 400),
   };
 };
 
@@ -69,9 +78,15 @@ export default async function handler(
 
   const { N, P, K, pH, temperature, humidity, rainfall, soilMoisture } = req.body;
 
-  // Validate inputs
-  if (!N || !P || !K || pH === undefined || !temperature || !humidity || !rainfall || soilMoisture === undefined) {
-    return res.status(400).json({ message: 'All environmental data fields are required' });
+  const values = { N, P, K, pH, temperature, humidity, rainfall, soilMoisture };
+  const numericValues = Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [key, typeof value === 'number' ? value : Number(value)])
+  ) as Record<string, number>;
+  if (Object.values(numericValues).some(value => !Number.isFinite(value))) {
+    return res.status(400).json({ message: 'All environmental data fields must be finite numbers' });
+  }
+  if (numericValues.pH < 0 || numericValues.pH > 14 || numericValues.humidity < 0 || numericValues.humidity > 100 || numericValues.soilMoisture < 0 || numericValues.soilMoisture > 100) {
+    return res.status(400).json({ message: 'Environmental data is outside the supported range' });
   }
 
   try {
@@ -119,7 +134,10 @@ Be specific and practical in your recommendations.`;
       }
     );
 
-    const grokText = grokResponse.data.choices[0]?.message?.content || '';
+    const grokText = grokResponse.data.choices?.[0]?.message?.content || '';
+    if (!grokText) {
+      throw new Error('The recommendation provider returned an empty response.');
+    }
     const analysisResult = parseGrokCropResponse(grokText);
 
     return res.status(200).json(analysisResult);

@@ -18,9 +18,9 @@ const parseGrokResponse = (text: string): AnalysisResponse => {
   // Parse the response from Grok and extract structured data
   const lines = text.split('\n').filter(line => line.trim());
   
-  let soilType = 'Loam';
-  let fertilityLevel: 'low' | 'medium' | 'high' = 'medium';
-  let moistureLevel: 'low' | 'moderate' | 'high' = 'moderate';
+  let soilType = '';
+  let fertilityLevel: 'low' | 'medium' | 'high' | undefined;
+  let moistureLevel: 'low' | 'moderate' | 'high' | undefined;
   let recommendedCrops: string[] = [];
   let explanation = '';
 
@@ -40,7 +40,7 @@ const parseGrokResponse = (text: string): AnalysisResponse => {
       const match = line.toLowerCase();
       if (match.includes('low')) fertilityLevel = 'low';
       else if (match.includes('high')) fertilityLevel = 'high';
-      else fertilityLevel = 'medium';
+      else if (match.includes('medium')) fertilityLevel = 'medium';
     }
     
     // Extract moisture level
@@ -48,7 +48,7 @@ const parseGrokResponse = (text: string): AnalysisResponse => {
       const match = line.toLowerCase();
       if (match.includes('low')) moistureLevel = 'low';
       else if (match.includes('high')) moistureLevel = 'high';
-      else moistureLevel = 'moderate';
+      else if (match.includes('moderate')) moistureLevel = 'moderate';
     }
     
     // Extract crops
@@ -63,20 +63,16 @@ const parseGrokResponse = (text: string): AnalysisResponse => {
     }
   }
 
-  // Fallback crops if not extracted
-  if (recommendedCrops.length === 0) {
-    recommendedCrops = ['Wheat', 'Corn', 'Soybeans'];
+  if (!soilType || !fertilityLevel || !moistureLevel || recommendedCrops.length === 0) {
+    throw new Error('The soil-analysis provider returned an incomplete structured response.');
   }
-
-  // Use part of the response as explanation
-  explanation = text.substring(0, 300);
 
   return {
     soilType,
     fertilityLevel,
     moistureLevel,
     recommendedCrops,
-    explanation,
+    explanation: text.substring(0, 300),
   };
 };
 
@@ -102,8 +98,12 @@ export default async function handler(
   }
 
   try {
-    // Extract base64 data from data URI
-    const base64Data = image.split(',')[1] || image;
+    // Extract and preserve the actual data-URI media type.
+    const dataUriMatch = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/i.exec(image);
+    if (!dataUriMatch) {
+      return res.status(400).json({ message: 'Image must be a base64 JPEG, PNG, or WebP data URI' });
+    }
+    const [, mediaType, base64Data] = dataUriMatch;
 
     // Call Grok Vision API
     const grokResponse = await axios.post(
@@ -118,7 +118,7 @@ export default async function handler(
                 type: 'image',
                 source: {
                   type: 'base64',
-                  media_type: 'image/jpeg',
+                  media_type: mediaType.toLowerCase(),
                   data: base64Data,
                 },
               },

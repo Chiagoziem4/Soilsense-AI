@@ -23,16 +23,16 @@ interface ErrorResponse {
 const parseGrokPlantResponse = (text: string): PlantAnalysisResponse => {
   const lines = text.split('\n').filter(line => line.trim());
   
-  let plantHealth = 'Moderate';
-  let healthScore = 65;
-  let riskLevel: 'low' | 'medium' | 'high' = 'medium';
+  let plantHealth = '';
+  let healthScore: number | undefined;
+  let riskLevel: 'low' | 'medium' | 'high' | undefined;
   let plantDiseases: string[] = [];
   let nutrientDeficiencies: string[] = [];
   let keyFindings: string[] = [];
   let treatmentRecommendations: string[] = [];
   let preventionTips: string[] = [];
-  let irrigationGuidance = 'Water regularly, maintaining consistent soil moisture.';
-  let confidenceScore = 0.85;
+  let irrigationGuidance = '';
+  let confidenceScore: number | undefined;
 
   // Parse response
   for (const line of lines) {
@@ -44,51 +44,41 @@ const parseGrokPlantResponse = (text: string): PlantAnalysisResponse => {
     
     if (lowerLine.includes('score')) {
       const match = line.match(/\d+/);
-      if (match) healthScore = parseInt(match[0]);
+      if (match) healthScore = Math.max(0, Math.min(100, parseInt(match[0], 10)));
     }
     
     if (lowerLine.includes('risk')) {
       if (lowerLine.includes('high')) riskLevel = 'high';
       else if (lowerLine.includes('low')) riskLevel = 'low';
-      else riskLevel = 'medium';
+      else if (lowerLine.includes('medium')) riskLevel = 'medium';
     }
     
     if (lowerLine.includes('disease')) {
-      plantDiseases.push(line.split(':')[1]?.trim() || 'Disease detected');
+      const value = line.split(':')[1]?.trim();
+      if (value) plantDiseases.push(value);
     }
     
     if (lowerLine.includes('deficien')) {
-      nutrientDeficiencies.push(line.split(':')[1]?.trim() || 'Nutrient deficiency');
+      const value = line.split(':')[1]?.trim();
+      if (value) nutrientDeficiencies.push(value);
+    }
+
+    if (lowerLine.includes('irrigation') || lowerLine.includes('watering')) {
+      const value = line.split(':')[1]?.trim();
+      if (value) irrigationGuidance = value;
+    }
+
+    if (lowerLine.includes('confidence')) {
+      const match = line.match(/(?:confidence[^0-9]*)(0?\.\d+|\d+(?:\.\d+)?)/i);
+      if (match) {
+        const value = Number(match[1]);
+        confidenceScore = Math.max(0, Math.min(1, value > 1 ? value / 100 : value));
+      }
     }
   }
 
-  // Default values if not extracted
-  if (plantDiseases.length === 0) {
-    plantDiseases = ['No major diseases detected'];
-  }
-  if (nutrientDeficiencies.length === 0) {
-    nutrientDeficiencies = ['Slight nitrogen deficiency'];
-  }
-  if (keyFindings.length === 0) {
-    keyFindings = [
-      'Plant shows moderate growth',
-      'Some leaf discoloration noted',
-      'Overall structure is healthy'
-    ];
-  }
-  if (treatmentRecommendations.length === 0) {
-    treatmentRecommendations = [
-      'Apply balanced NPK fertilizer',
-      'Increase watering frequency',
-      'Prune affected leaves'
-    ];
-  }
-  if (preventionTips.length === 0) {
-    preventionTips = [
-      'Maintain proper spacing between plants',
-      'Ensure adequate sunlight exposure',
-      'Sanitize gardening tools regularly'
-    ];
+  if (!plantHealth || healthScore === undefined || !riskLevel || !irrigationGuidance || confidenceScore === undefined) {
+    throw new Error('The plant-analysis provider returned an incomplete structured response.');
   }
 
   return {
@@ -128,7 +118,11 @@ export default async function handler(
   }
 
   try {
-    const base64Data = image.split(',')[1] || image;
+    const dataUriMatch = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/i.exec(image);
+    if (!dataUriMatch) {
+      return res.status(400).json({ message: 'Image must be a base64 JPEG, PNG, or WebP data URI' });
+    }
+    const [, mediaType, base64Data] = dataUriMatch;
 
     const grokResponse = await axios.post(
       'https://api.x.ai/v1/messages',
@@ -142,7 +136,7 @@ export default async function handler(
                 type: 'image',
                 source: {
                   type: 'base64',
-                  media_type: 'image/jpeg',
+                  media_type: mediaType.toLowerCase(),
                   data: base64Data,
                 },
               },
